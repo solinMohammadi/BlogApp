@@ -2,6 +2,8 @@ package Model;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jdk.jfr.Category;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -18,7 +20,7 @@ import java.util.List;
         private Category category;
         private List<Comment> comments;
         private List<Tag> tags;
-        private Users author;
+        private User author;
         private LocalDateTime createdAt;
 
         @Id
@@ -79,11 +81,11 @@ import java.util.List;
         }
 
         @ManyToOne
-        public Users getAuthor() {
+        public User getAuthor() {
             return author;
         }
 
-        public void setAuthor(Users author) {
+        public void setAuthor(User author) {
             this.author = author;
         }
 
