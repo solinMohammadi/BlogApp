@@ -1,4 +1,4 @@
-package Model;
+package com.example.blogapp.Model;
 
 
 import jakarta.persistence.*;
@@ -17,13 +17,24 @@ import java.util.List;
         private int id;
         private String title;
         private String content;
+        private  Post post;
         private Category category;
         private List<Comment> comments;
         private List<Tag> tags;
         private User author;
         private LocalDateTime createdAt;
 
-        @Id
+      @ManyToOne
+      public Post getPost() {
+          return post;
+      }
+
+      public void setPost(Post post) {
+          this.post = post;
+      }
+
+
+    @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         public int getId() {
             return id;

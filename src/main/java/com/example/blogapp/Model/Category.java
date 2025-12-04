@@ -1,0 +1,59 @@
+package com.example.blogapp.Model;
+
+import jakarta.persistence.*;
+
+@Entity
+public class Category {
+    private int id;
+    private String name;
+    private String slug;
+    private String description;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    @PrePersist
+    public void generateSlug() {
+        if (this.slug == null || this.slug.isBlank()) {
+            this.slug = slugify(this.name + "-" + System.currentTimeMillis());
+        }
+    }
+
+    private String slugify(String input) {
+        if (input == null) return null;
+        return input.toLowerCase()
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-|-$", "");
+    }
+}
