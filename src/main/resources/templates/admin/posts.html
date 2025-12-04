@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${post.title}">جزئیات پست</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* متغیرهای رنگ TBlog */
+        :root {
+            --primary-color: #7d27da;
+            --primary-dark: #5e1ca9;
+            --primary-light: #9a4eff;
+            --dark-bg: #121212;
+            --darker-bg: #0a0a0a;
+            --card-bg: #1e1e1e;
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --border-color: #333333;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+
+        /* تغییر تم کلی */
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+        }
+
+        /* تغییر هدر */
+        header {
+            background-color: rgba(10, 10, 10, 0.95) !important;
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+
+        header a:hover {
+            color: var(--primary-light) !important;
+        }
+
+        /* تغییر کارت‌ها */
+        .bg-white {
+            background-color: var(--card-bg) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+
+        .text-gray-900 {
+            color: var(--text-primary) !important;
+        }
+
+        .text-gray-700, .text-gray-800 {
+            color: var(--text-secondary) !important;
+        }
+
+        .text-gray-500 {
+            color: var(--text-secondary) !important;
+            opacity: 0.8;
+        }
+
+        .border-gray-200, .border-gray-300 {
+            border-color: var(--border-color) !important;
+        }
+
+        /* تغییر دکمه‌ها */
+        .bg-blue-600, .from-blue-600, .to-blue-700 {
+            background-color: var(--primary-color) !important;
+            background-image: none !important;
+        }
+
+        .hover\:bg-blue-700:hover, .hover\:from-blue-700:hover {
+            background-color: var(--primary-dark) !important;
+            background-image: none !important;
+        }
+
+        .focus\:ring-blue-500:focus {
+            --tw-ring-color: var(--primary-color) !important;
+        }
+
+        .focus\:border-blue-500:focus {
+            border-color: var(--primary-color) !important;
+        }
+
+        /* تغییر فوتر */
+        .bg-gray-900 {
+            background-color: var(--darker-bg) !important;
+        }
+
+        .text-gray-300 {
+            color: var(--text-secondary) !important;
+        }
+
+        /* تغییر کامنت در انتظار تأیید */
+        .border-red-300 {
+            border-color: var(--warning-color) !important;
+        }
+
+        .bg-red-50 {
+            background-color: rgba(245, 158, 11, 0.1) !important;
+        }
+
+        .ring-red-200\/50 {
+            --tw-ring-color: rgba(245, 158, 11, 0.3) !important;
+        }
+
+        .bg-red-100 {
+            background-color: rgba(245, 158, 11, 0.2) !important;
+        }
+
+        .text-red-800 {
+            color: var(--warning-color) !important;
+        }
+
+        /* تغییر پیام‌ها */
+        .bg-green-500 {
+            background-color: var(--success-color) !important;
+        }
+
+        .bg-red-500 {
+            background-color: var(--danger-color) !important;
+        }
+
+        /* بهبود ظاهر فرم‌ها */
+        input, textarea {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            color: var(--text-primary) !important;
+        }
+
+        input:focus, textarea:focus {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        /* بهبود سایه‌ها */
+        .shadow-lg {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .shadow-2xl {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        /* لوگو TBlog */
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* متن‌های اضافی */
+        .logo-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* انیمیشن‌های جزئی */
+        .transition-all {
+            transition-duration: 0.3s;
+        }
+
+        /* بهبود ظاهر بخش کامنت غیرفعال */
+        .text-center .text-6xl {
+            color: var(--primary-color) !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<!-- هدر -->
+<header class="text-white shadow sticky top-0 z-50">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div>
+            <h1 class="logo">TBlog</h1>
+            <p class="logo-subtitle">بلاگ تخصصی فناوری</p>
+        </div>
+        <nav class="space-x-4">
+            <a href="/" class="hover:underline">خانه</a>
+            <a href="/posts" class="hover:underline">مقالات</a>
+            <a href="/auth/login" class="hover:underline">ورود</a>
+            <a href="/auth/register" class="hover:underline">ثبت‌نام</a>
+        </nav>
+    </div>
+</header>
+
+<!-- محتوای اصلی -->
+<main class="container mx-auto px-6 py-10 flex-grow">
+    <!-- پست -->
+    <article class="rounded-xl shadow-lg p-8 mb-12">
+        <h2 class="text-4xl font-bold mb-6" th:text="${post.title}">عنوان پست</h2>
+        <div class="flex flex-wrap items-center gap-4 mb-8 text-sm">
+            <span th:text="${post.category != null ? post.category.name : 'بدون دسته'}">دسته‌بندی</span>
+            <span th:text="${#temporals.format(post.publishedAt,'yyyy-MM-dd HH:mm')}">تاریخ انتشار</span>
+            <span th:text="${post.author != null ? post.author.username : 'ناشناس'}">نویسنده</span>
+        </div>
+        <p class="text-xl mb-8 leading-relaxed" th:text="${post.excerpt}">خلاصه پست</p>
+        <div class="prose prose-lg max-w-none leading-relaxed" th:utext="${post.content}">محتوای پست</div>
+    </article>
+
+    <!-- بخش کامنت‌ها -->
+    <section id="comments-section" class="rounded-xl shadow-lg p-8 mb-12">
+        <h3 class="text-2xl font-bold mb-8 border-b pb-4">
+            کامنت‌ها <span id="comments-count">0</span>
+        </h3>
+        <div id="no-comments" class="text-center py-12">
+            <div class="text-6xl mb-4">💬</div>
+            <p class="text-xl">در حال بارگذاری کامنت‌ها...</p>
+        </div>
+        <div id="approved-comments" class="mb-6"></div>
+        <div id="pending-comments"></div>
+    </section>
+
+    <!-- فرم کامنت برای کاربران لاگین شده -->
+    <section class="rounded-xl shadow-lg p-8" sec:authorize="isAuthenticated()">
+        <h3 class="text-2xl font-bold mb-8 border-b pb-4">افزودن کامنت جدید</h3>
+        <form id="commentForm" class="space-y-6">
+            <input type="hidden" name="postId" th:value="${post.id}" id="postId"/>
+            <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+            <div>
+                <label class="block text-sm font-medium mb-2">نام شما:</label>
+                <input type="text" name="authorName" class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" required placeholder="نام خود را وارد کنید"/>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2">ایمیل:</label>
+                <input type="email" name="authorEmail" class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" required placeholder="example@email.com"/>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2">متن کامنت:</label>
+                <textarea name="content" rows="5" class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-vertical" required placeholder="نظر خود را بنویسید..."></textarea>
+            </div>
+            <button type="submit" class="w-full text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg">ارسال کامنت</button>
+        </form>
+    </section>
+
+    <!-- پیام برای کاربران غیرلاگین -->
+    <section class="rounded-xl shadow-lg p-12 text-center" sec:authorize="isAnonymous()">
+        <div class="text-6xl mb-6">🔒</div>
+        <h3 class="text-2xl font-bold mb-4">برای کامنت گذاشتن وارد شوید</h3>
+        <a href="/auth/login" class="text-white px-8 py-4 rounded-xl font-semibold hover:bg-blue-700 transition">ورود به حساب</a>
+    </section>
+</main>
+
+<!-- فوتر -->
+<footer class="py-8 mt-auto">
+    <div class="container mx-auto px-6 text-center">
+        <p>© ۱۴۰۳ - TBlog. همه حقوق محفوظ است.</p>
+    </div>
+</footer>
+
+<!-- اسکریپت اصلی (بدون تغییر) -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Page loaded');
+        const postId = document.getElementById('postId')?.value;
+        if (postId) {
+            loadComments(postId);
+        }
+
+        const form = document.getElementById('commentForm');
+        if (form) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await submitComment();
+            });
+        }
+    });
+
+    async function loadComments(postId) {
+        try {
+            console.log('Loading comments for post:', postId);
+            const response = await fetch(`/comments/post/${postId}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const comments = await response.json();
+            console.log('Comments loaded:', comments);
+
+            renderComments(comments);
+        } catch (error) {
+            console.error('Load comments error:', error);
+            showMessage('❌ خطا در بارگذاری کامنت‌ها', 'error');
+        }
+    }
+
+    async function submitComment() {
+        const form = document.getElementById('commentForm');
+        const postId = document.getElementById('postId').value;
+        const formData = new FormData(form);
+        const csrfToken = formData.get('_csrf');
+
+        const data = {
+            postId: parseInt(postId),
+            authorName: formData.get('authorName').trim(),
+            authorEmail: formData.get('authorEmail').trim(),
+            content: formData.get('content').trim()
+        };
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '⏳ ارسال...';
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch('/comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify(data),
+                credentials: 'same-origin'
+            });
+
+            const result = await response.json().catch(() => response.text());
+
+            if (response.ok) {
+                showMessage('✅ کامنت ارسال شد و منتظر تأیید است!', 'success');
+                form.reset();
+                await loadComments(postId);
+            } else {
+                showMessage('❌ ' + (result || 'خطای ناشناخته'), 'error');
+            }
+        } catch (error) {
+            console.error('Submit error:', error);
+            showMessage('❌ خطای شبکه', 'error');
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+
+    function renderComments(comments) {
+        const approvedSection = document.getElementById('approved-comments');
+        const pendingSection = document.getElementById('pending-comments');
+        const noComments = document.getElementById('no-comments');
+        const countSpan = document.getElementById('comments-count');
+
+        approvedSection.innerHTML = '';
+        pendingSection.innerHTML = '';
+
+        const approvedCount = comments.filter(c => c.approved === 1).length;
+        const pendingCount = comments.filter(c => c.approved === 0).length;
+        countSpan.textContent = approvedCount + pendingCount;
+
+        if (approvedCount + pendingCount === 0) {
+            noComments.innerHTML = `
+            <div class="text-6xl mb-4">💬</div>
+            <p class="text-xl">هنوز کامنتی ثبت نشده است.</p>
+        `;
+            return;
+        }
+
+        noComments.style.display = 'none';
+
+        const sortedComments = comments.sort((a, b) => {
+            if (a.approved !== b.approved) return b.approved - a.approved;
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+        sortedComments.forEach(comment => {
+            const div = document.createElement('div');
+            div.className = comment.approved === 0
+                ? 'border py-6 rounded-xl mb-4 transition-all duration-200 hover:bg-gray-50 border-red-300 bg-red-50 shadow-md ring-2 ring-red-200/50'
+                : 'border py-6 rounded-xl mb-4 transition-all duration-200 hover:bg-gray-50 border-gray-200';
+
+            if (comment.approved === 0) {
+                div.innerHTML = `
+                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 mb-3">
+                    ⏳ منتظر تأیید مدیر
+                </div>
+                <div class="text-lg mb-3 leading-relaxed text-red-800">${escapeHtml(comment.content)}</div>
+                <div class="flex flex-wrap items-center justify-between text-sm text-gray-500 gap-2">
+                    <span>${escapeHtml(comment.authorName)}</span>
+                    ${comment.authorEmail ? `<span>✉️ ${escapeHtml(comment.authorEmail)}</span>` : ''}
+                    <span>${comment.createdAt}</span>
+                </div>
+            `;
+                pendingSection.appendChild(div);
+            } else {
+                div.innerHTML = `
+                <div class="text-lg mb-3 leading-relaxed text-gray-900">${escapeHtml(comment.content)}</div>
+                <div class="flex flex-wrap items-center justify-between text-sm text-gray-500 gap-2">
+                    <span>${escapeHtml(comment.authorName)}</span>
+                    ${comment.authorEmail ? `<span>✉️ ${escapeHtml(comment.authorEmail)}</span>` : ''}
+                    <span>${comment.createdAt}</span>
+                </div>
+            `;
+                approvedSection.appendChild(div);
+            }
+        });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function showMessage(text, type) {
+        const div = document.createElement('div');
+        div.className = `fixed top-20 right-4 z-50 px-6 py-4 rounded-xl shadow-2xl text-white text-lg font-medium transform translate-x-full transition-all duration-300 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+        div.innerHTML = `<strong>${text}</strong>`;
+        document.body.appendChild(div);
+        setTimeout(() => div.classList.remove('translate-x-full'), 100);
+        setTimeout(() => {
+            div.classList.add('translate-x-full');
+            setTimeout(() => document.body.removeChild(div), 300);
+        }, 4000);
+    }
+</script>
+</body>
+</html>

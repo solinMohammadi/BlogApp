@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - بلاگ </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap">
+    <style>
+
+        :root {
+            --primary-color: rgba(138, 39, 84, 0.2);
+            --primary-dark: rgba(67, 60, 114, 0.93);
+            --primary-light: #50283a;
+            --dark-bg: #7c56a4;
+            --darker-bg: rgb(154, 135, 175);
+            --card-bg: rgba(231, 132, 228, 0.2);
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --border-color: #333333;
+            --shadow-color: rgba(217, 127, 158, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.3s;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: rgb(29, 25, 33);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(199, 173, 173, 0.5);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-text h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .logo-text p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .nav-menu ul {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-menu a {
+            font-weight: 500;
+            padding: 8px 0;
+            position: relative;
+        }
+
+        .nav-menu a:hover {
+            color: var(--primary-light);
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: width 0.3s;
+        }
+
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            box-shadow: 0 0 15px var(--shadow-color);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        /* بخش قهرمان */
+        .hero {
+            padding: 80px 0 60px;
+            background: linear-gradient(to bottom, var(--darker-bg), var(--dark-bg));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 60%;
+            height: 150%;
+            background: radial-gradient(circle, var(--primary-color) 0%, transparent 70%);
+            opacity: 0.05;
+            z-index: 0;
+        }
+
+        .hero-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-text {
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .hero-text h2 {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero-text h2 span {
+            color: var(--primary-light);
+        }
+
+        .hero-text p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            max-width: 500px;
+        }
+
+        /* بخش پست‌های ویژه */
+        .featured-posts {
+            padding: 60px 0;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .section-header h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary-color), transparent);
+        }
+
+        .view-all {
+            color: var(--primary-color);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .view-all:hover {
+            color: var(--primary-light);
+        }
+
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .post-card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+            border-color: var(--primary-color);
+        }
+
+        .post-image {
+            height: 200px;
+            width: 100%;
+            object-fit: cover;
+        }
+
+        .post-content {
+            padding: 25px;
+        }
+
+        .post-category {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+        }
+
+        .post-title {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .post-excerpt {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 15px;
+        }
+
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .author-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* تگ‌ها */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .tag {
+            background-color: var(--primary-dark);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        /* پینشن */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 50px;
+            padding: 20px 0;
+        }
+
+        .page-link {
+            padding: 8px 16px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+        }
+
+        .page-link:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .page-link.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .page-link.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-link.disabled:hover {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+
+        /* فوتر */
+        footer {
+            background-color: var(--darker-bg);
+            padding: 60px 0 30px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-about p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .social-link:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .footer-links h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-links h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 40px;
+            height: 2px;
+            background-color: var(--primary-color);
+        }
+
+        .footer-links ul li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-light);
+            padding-right: 5px;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* پیام خالی */
+        .empty-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        /* رسپانسیو */
+        @media (max-width: 992px) {
+            .hero-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero-text {
+                margin-bottom: 40px;
+            }
+
+            .hero-text p {
+                margin: 0 auto 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                right: 0;
+                width: 100%;
+                background-color: var(--darker-bg);
+                padding: 20px;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+                border-top: 1px solid var(--border-color);
+            }
+
+            .nav-menu.active {
+                display: block;
+            }
+
+            .nav-menu ul {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .nav-buttons {
+                display: none;
+            }
+
+            .hero-text h2 {
+                font-size: 2.2rem;
+            }
+
+            .posts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-text h2 {
+                font-size: 1.8rem;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            .pagination {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- هدر و ناوبری -->
+<header>
+    <div class="container header-container">
+        <div class="logo-container">
+            <div class="logo-text">
+                <h1>Blog</h1>
+                <p>بلاگ برنامه‌نویسی</p>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="/" class="active">خانه</a></li>
+                <li><a href="http://localhost:63342/BlogApp/templates/post.html">مقالات</a></li>
+                <li><a href="http://localhost:63342/BlogApp/templates/admin/categories-tag.html">دسته‌بندی‌ها</a></li>
+                <li><a href="/about">درباره ما</a></li>
+                <li><a href="/contact">تماس با ما</a></li>
+            </ul>
+        </nav>
+
+        <div class="nav-buttons">
+            <a href="http://localhost:63342/BlogApp/templates/login.html" class="btn btn-outline">ورود</a>
+            <a href="http://localhost:63342/BlogApp/templates/register.html" class="btn btn-primary">عضویت</a>
+        </div>
+
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<section class="hero">
+    <div class="container hero-content">
+        <div class="hero-text">
+            <h2>به دنیای <span>فناوری</span> خوش آمدید</h2>
+            <p>در  این Blog جدیدترین مقالات، آموزش‌ها و اخبار دنیای فناوری، برنامه‌نویسی و طراحی را دنبال کنید.</p>
+            <a href="/posts" class="btn btn-primary" style="margin-top: 20px;">شروع به خواندن</a>
+        </div>
+        <div class="hero-animation">
+            <img src="https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                 alt="انیمیشن فناوری" class="hero-gif"
+                 style="width: 100%; max-width: 500px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.7);">
+        </div>
+    </div>
+</section>
+<section class="featured-posts">
+    <div class="container">
+        <div class="section-header">
+            <h2>آخرین مقالات</h2>
+            <a href="http://localhost:63342/BlogApp/templates/post.html" class="view-all">مشاهده همه <i class="fas fa-arrow-left"></i></a>
+        </div>
+
+        <!-- Posts list -->
+        <div class="posts-grid">
+            <!-- اگر پستی وجود نداشت -->
+            <div th:if="${posts.empty}" class="empty-message">
+                <i class="fas fa-newspaper empty-icon"></i>
+                <h3 style="color: var(--text-secondary); margin-bottom: 10px;">مقاله‌ای یافت نشد</h3>
+                <p style="color: var(--text-secondary);">هنوز هیچ مقاله‌ای منتشر نشده است.</p>
+            </div>
+
+            <div th:each="post : ${posts.content}" class="post-card">
+      <a th:href="@{'/posts/view/' + ${post.slug}}" class="post-link" style="display: block; text-decoration: none; color: inherit;">
+
+                    <img th:src="${post.imageUrl != null && post.imageUrl != '' ? post.imageUrl : 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}"
+                         alt="تصویر پست" class="post-image">
+
+                    <div class="post-content">
+                        <span class="post-category"
+                              th:text="${post.category != null ? post.category.name : 'بدون دسته'}">
+                        </span>
+
+                        <h3 class="post-title" th:text="${post.title}">عنوان پست</h3>
+
+                        <p class="post-excerpt" th:text="${post.excerpt != null && post.excerpt != '' ? post.excerpt : 'بدون خلاصه'}">
+                            توضیح پست
+                        </p>
+
+                        <div th:if="${post.tags != null && !post.tags.empty}" class="tags-container">
+                            <span th:each="tag : ${post.tags}" class="tag" th:text="${tag.name}">
+                                تگ
+                            </span>
+                        </div>
+
+                        <div class="post-meta">
+                            <div class="post-author">
+                                <div class="author-avatar">
+                                    <span th:text="${post.author != null && post.author.fullName != null ? post.author.fullName.charAt(0) : '?'}">
+                                        A
+                                    </span>
+                                </div>
+                                <span th:text="${post.author != null ? post.author.fullName : 'نویسنده ناشناس'}">
+                                    نویسنده
+                                </span>
+                            </div>
+                            <span th:text="${post.publishedAt != null ? #temporals.format(post.publishedAt, 'yyyy/MM/dd') : 'بدون تاریخ'}">
+                                تاریخ
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${!posts.empty}" class="pagination">
+            <!-- قبلی -->
+            <a th:if="${posts.hasPrevious()}"
+               th:href="@{/(page=${posts.number - 1},size=${posts.size})}"
+               class="page-link">
+                <i class="fas fa-chevron-right"></i> قبلی
+            </a>
+
+
+            <!-- صفحات -->
+            <div th:each="i : ${#numbers.sequence(1, posts.totalPages)}">
+                <a th:href="@{/(page=${i - 1},size=${posts.size})}"
+                   th:text="${i}"
+                   th:classappend="${(i - 1) == posts.number} ? 'page-link active' : 'page-link'">
+                </a>
+            </div>
+
+            <!-- بعدی -->
+            <a th:if="${posts.hasNext()}"
+               th:href="@{/(page=${posts.number + 1},size=${posts.size})}"
+               class="page-link">
+                بعدی <i class="fas fa-chevron-left"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- فوتر -->
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-about">
+                <h3>درباره Blog</h3>
+                <p>Blog مرجع تخصصی مقالات فناوری، برنامه‌نویسی و طراحی است که با هدف اشتراک دانش و تجربه ایجاد شده است.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-telegram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <h3>لینک‌های سریع</h3>
+                <ul>
+                    <li><a href="/">خانه</a></li>
+                    <li><a href="/posts">مقالات</a></li>
+                    <li><a href="/categories">دسته‌بندی‌ها</a></li>
+                    <li><a href="/about">درباره ما</a></li>
+                    <li><a href="/contact">تماس با ما</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h3>دسته‌بندی‌ها</h3>
+                <ul>
+                    <li><a href="/categories">برنامه‌نویسی</a></li>
+                    <li><a href="/categories">هوش مصنوعی</a></li>
+                    <li><a href="/categories">طراحی وب</a></li>
+                    <li><a href="/categories">امنیت سایبری</a></li>
+                    <li><a href="/categories">فناوری جدید</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="copyright">
+            <p>کلیه حقوق محفوظ است © ۱۴۰۳ - TBlog</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // مدیریت منوی موبایل
+    document.getElementById('mobileMenuBtn').addEventListener('click', function () {
+        const navMenu = document.querySelector('.nav-menu');
+        const icon = this.querySelector('i');
+
+        navMenu.classList.toggle('active');
+        if (navMenu.classList.contains('active')) {
+            icon.classList.remove('fa-bars');
+            icon.classList.add('fa-times');
+        } else {
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        }
+    });
+
+    // بستن منوی موبایل با کلیک روی لینک
+    document.querySelectorAll('.nav-menu a').forEach(link => {
+        link.addEventListener('click', () => {
+            const navMenu = document.querySelector('.nav-menu');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const icon = menuBtn.querySelector('i');
+
+            navMenu.classList.remove('active');
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        });
+    });
+
+    // مدیریت اسکرول هدر
+    window.addEventListener('scroll', () => {
+        const header = document.querySelector('header');
+        if (window.scrollY > 50) {
+            header.style.backgroundColor = 'rgba(10, 10, 10, 0.98)';
+            header.style.backdropFilter = 'blur(10px)';
+        } else {
+            header.style.backgroundColor = 'rgba(10, 10, 10, 0.95)';
+            header.style.backdropFilter = 'none';
+        }
+    });
+
+    // افزودن انیمیشن به کارت‌ها هنگام اسکرول
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // اعمال انیمیشن به کارت‌های پست
+    document.querySelectorAll('.post-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        observer.observe(card);
+    });
+
+    // فرمت تاریخ برای نمایش بهتر
+    document.addEventListener('DOMContentLoaded', function () {
+        // اگر تاریخ‌ها نیاز به فرمت خاصی دارند، اینجا می‌توانید تغییر دهید
+        const dates = document.querySelectorAll('.post-meta span:last-child');
+        dates.forEach(dateElement => {
+            const dateText = dateElement.textContent;
+            if (dateText && dateText.includes('-')) {
+                // تبدیل تاریخ از فرمت yyyy-MM-dd به تاریخ فارسی
+                const [year, month, day] = dateText.split('-');
+                const persianDate = `${year}/${month}/${day}`;
+                dateElement.textContent = persianDate;
+            }
+        });
+    });
+
+    // مدیریت کلیک روی کارت‌ها
+    document.querySelectorAll('.post-card').forEach(card => {
+        card.addEventListener('click', function (e) {
+            // جلوگیری از کلیک روی لینک‌های داخل کارت
+            if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') {
+                return;
+            }
+
+            // یافتن لینک داخل کارت
+            const link = this.querySelector('a');
+            if (link) {
+                window.location.href = link.getAttribute('href');
+            }
+        });
+    });
+</script>
+</body>
+</html>

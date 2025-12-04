@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت دسته‌بندی‌ها و برچسب‌ها - TBlog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <style>
+        /* متغیرهای رنگ و فونت */
+        :root {
+            --primary-color: #7d27da;
+            --primary-dark: #5e1ca9;
+            --primary-light: #9a4eff;
+            --dark-bg: #121212;
+            --darker-bg: #0a0a0a;
+            --card-bg: #1e1e1e;
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --border-color: #333333;
+            --shadow-color: rgba(125, 39, 218, 0.2);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+        }
+
+        /* ریست و تنظیمات پایه */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.3s;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* هدر و ناوبری */
+        header {
+            background-color: rgba(10, 10, 10, 0.95);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-text h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .logo-text p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .nav-menu ul {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-menu a {
+            font-weight: 500;
+            padding: 8px 0;
+            position: relative;
+        }
+
+        .nav-menu a:hover {
+            color: var(--primary-light);
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: width 0.3s;
+        }
+
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-family: 'Vazirmatn', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            box-shadow: 0 0 15px var(--shadow-color);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #0da271;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #d97706;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-info {
+            background-color: var(--info-color);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #2563eb;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-secondary {
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #2a2a2a;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        /* بخش قهرمان */
+        .hero {
+            padding: 60px 0 40px;
+            background: linear-gradient(to bottom, var(--darker-bg), var(--dark-bg));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 60%;
+            height: 150%;
+            background: radial-gradient(circle, var(--primary-color) 0%, transparent 70%);
+            opacity: 0.05;
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .hero-text h2 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .hero-text h2 span {
+            color: var(--primary-light);
+        }
+
+        .hero-text p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        /* پیام‌های اطلاع‌رسانی */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideDown 0.3s ease-out;
+            border-right: 4px solid;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.15);
+            border-right-color: var(--success-color);
+            color: #a7f3d0;
+        }
+
+        .alert-danger {
+            background-color: rgba(239, 68, 68, 0.15);
+            border-right-color: var(--danger-color);
+            color: #fecaca;
+        }
+
+        .alert-warning {
+            background-color: rgba(245, 158, 11, 0.15);
+            border-right-color: var(--warning-color);
+            color: #fde68a;
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .alert-close:hover {
+            opacity: 1;
+        }
+
+        /* بخش مدیریت */
+        .admin-section {
+            padding: 30px 0 60px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-header h2 {
+            font-size: 1.8rem;
+            position: relative;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header h2::after {
+            content: '';
+            position: absolute;
+            bottom: -16px;
+            right: 0;
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary-color), transparent);
+        }
+
+        .section-header .count-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* کارت‌های فرم */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--shadow-color);
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--shadow-color);
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 20px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* جداول */
+        .table-container {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        thead {
+            background-color: rgba(125, 39, 218, 0.1);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        th {
+            padding: 18px 20px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            font-size: 0.95rem;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        td {
+            padding: 18px 20px;
+            vertical-align: middle;
+            color: var(--text-primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .empty-state small {
+            font-size: 0.9rem;
+        }
+
+        /* فوتر */
+        footer {
+            background-color: var(--darker-bg);
+            padding: 60px 0 30px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-about p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .social-link:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .footer-links h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-links h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 40px;
+            height: 2px;
+            background-color: var(--primary-color);
+        }
+
+        .footer-links ul li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-light);
+            padding-right: 5px;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* رسپانسیو */
+        @media (max-width: 992px) {
+            .hero-text h2 {
+                font-size: 2.2rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                right: 0;
+                width: 100%;
+                background-color: var(--darker-bg);
+                padding: 20px;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+                border-top: 1px solid var(--border-color);
+            }
+
+            .nav-menu.active {
+                display: block;
+            }
+
+            .nav-menu ul {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .nav-buttons {
+                display: none;
+            }
+
+            .hero-text h2 {
+                font-size: 2rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-text h2 {
+                font-size: 1.7rem;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            th, td {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- هدر و ناوبری -->
+<header>
+    <div class="container header-container">
+        <div class="logo-container">
+            <div class="logo-text">
+                <h1>TBlog</h1>
+                <p>مدیریت دسته‌بندی‌ها و برچسب‌ها</p>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="/">خانه</a></li>
+                <li><a href="/posts">مقالات</a></li>
+                <li><a href="/posts/admin">مدیریت پست‌ها</a></li>
+                <li><a href="/categories-tags" class="active">دسته‌بندی‌ها و برچسب‌ها</a></li>
+                <li><a href="/about">درباره ما</a></li>
+            </ul>
+        </nav>
+
+        <div class="nav-buttons">
+            <a href="/posts" class="btn btn-outline">مشاهده مقالات</a>
+            <a href="/logout" class="btn btn-primary">خروج</a>
+        </div>
+
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<!-- بخش قهرمان -->
+<section class="hero">
+    <div class="container hero-content">
+        <div class="hero-text">
+            <h2>مدیریت <span>دسته‌بندی‌ها و برچسب‌ها</span></h2>
+            <p>در این بخش می‌توانید دسته‌بندی‌ها و برچسب‌های وبلاگ را مدیریت کنید.</p>
+        </div>
+    </div>
+</section>
+
+<!-- پیام‌های اطلاع‌رسانی -->
+<div class="container">
+    <div id="alertBox" class="alert hidden" role="alert">
+        <span id="alertMessage"></span>
+        <button class="alert-close" onclick="this.parentElement.classList.add('hidden')">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+</div>
+
+<!-- بخش مدیریت -->
+<section class="admin-section">
+    <div class="container">
+        <!-- دسته‌بندی‌ها -->
+        <div class="card">
+            <h3 class="card-title">
+                <i class="fas fa-folder"></i>
+                مدیریت دسته‌بندی‌ها
+            </h3>
+
+            <form id="categoryForm">
+                <input type="hidden" id="categoryId">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="categoryName">
+                            <i class="fas fa-tag"></i> نام دسته‌بندی
+                        </label>
+                        <input type="text" id="categoryName" placeholder="مثال: برنامه‌نویسی" required>
+                        <small>نام منحصربه‌فرد برای دسته‌بندی وارد کنید</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="categoryDescription">
+                            <i class="fas fa-align-left"></i> توضیحات
+                        </label>
+                        <textarea id="categoryDescription" placeholder="توضیحات مربوط به این دسته‌بندی"></textarea>
+                        <small>توضیحات اختیاری برای دسته‌بندی (حداکثر 255 کاراکتر)</small>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> ذخیره دسته‌بندی
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="categoryResetBtn">
+                        <i class="fas fa-times"></i> انصراف
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="section-header">
+            <h2>دسته‌بندی‌های موجود <span class="count-badge" id="categoryCount">0</span></h2>
+        </div>
+
+        <div class="table-container">
+            <table id="categoriesTable">
+                <thead>
+                <tr>
+                    <th style="width: 120px;">شناسه</th>
+                    <th>نام</th>
+                    <th>توضیحات</th>
+                    <th style="width: 220px;">عملیات</th>
+                </tr>
+                </thead>
+                <tbody id="categoriesTableBody">
+                <!-- دسته‌بندی‌ها در اینجا نمایش داده می‌شوند -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- برچسب‌ها -->
+        <div class="card" style="margin-top: 50px;">
+            <h3 class="card-title">
+                <i class="fas fa-hashtag"></i>
+                مدیریت برچسب‌ها
+            </h3>
+
+            <form id="tagForm">
+                <input type="hidden" id="tagId">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tagName">
+                            <i class="fas fa-tag"></i> نام برچسب
+                        </label>
+                        <input type="text" id="tagName" placeholder="مثال: جاوا" required>
+                        <small>نام منحصربه‌فرد برای برچسب وارد کنید</small>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> ذخیره برچسب
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="tagResetBtn">
+                        <i class="fas fa-times"></i> انصراف
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="section-header">
+            <h2>برچسب‌های موجود <span class="count-badge" id="tagCount">0</span></h2>
+        </div>
+
+        <div class="table-container">
+            <table id="tagsTable">
+                <thead>
+                <tr>
+                    <th style="width: 120px;">شناسه</th>
+                    <th>نام</th>
+                    <th style="width: 220px;">عملیات</th>
+                </tr>
+                </thead>
+                <tbody id="tagsTableBody">
+                <!-- برچسب‌ها در اینجا نمایش داده می‌شوند -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- فوتر -->
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-about">
+                <h3>درباره TBlog</h3>
+                <p>TBlog مرجع تخصصی مقالات فناوری، برنامه‌نویسی و طراحی است که با هدف اشتراک دانش و تجربه ایجاد شده است.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-telegram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <h3>لینک‌های سریع</h3>
+                <ul>
+                    <li><a href="/">خانه</a></li>
+                    <li><a href="/posts">مقالات</a></li>
+                    <li><a href="/posts/admin">مدیریت پست‌ها</a></li>
+                    <li><a href="/categories-tags">دسته‌بندی‌ها و برچسب‌ها</a></li>
+                    <li><a href="/about">درباره ما</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h3>دسته‌بندی‌ها</h3>
+                <ul>
+                    <li><a href="/categories">برنامه‌نویسی</a></li>
+                    <li><a href="/categories">هوش مصنوعی</a></li>
+                    <li><a href="/categories">طراحی وب</a></li>
+                    <li><a href="/categories">امنیت سایبری</a></li>
+                    <li><a href="/categories">فناوری جدید</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="copyright">
+            <p>کلیه حقوق محفوظ است © ۱۴۰۳ - TBlog - مدیریت دسته‌بندی‌ها و برچسب‌ها</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // خواندن CSRF از meta (برای درخواست‌های POST/PUT/DELETE)
+    const CSRF_TOKEN = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
+    const CSRF_HEADER = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+
+    const BASE = ''; // کانتکست‌پث اگر وجود دارد
+
+    // کمک برای نمایش پیام‌ها
+    function showAlert(type, message) {
+        const box = document.getElementById('alertBox');
+        const messageEl = document.getElementById('alertMessage');
+
+        box.className = `alert alert-${type}`;
+        messageEl.textContent = message;
+        box.classList.remove('hidden');
+
+        setTimeout(() => box.classList.add('hidden'), 4000);
+    }
+
+    // کمکی: ساخت گزینه‌های header با CSRF
+    function jsonHeaders() {
+        const headers = { 'Content-Type': 'application/json' };
+        if (CSRF_TOKEN) headers[CSRF_HEADER] = CSRF_TOKEN;
+        return headers;
+    }
+
+    // امن‌سازی مقادیر برای استفاده در HTML
+    function escapeHtml(text) {
+        if (text == null) return '';
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    // ===== دسته‌بندی‌ها =====
+    async function loadCategories() {
+        try {
+            const res = await fetch(`${BASE}/categories`, { method: 'GET' });
+            if (!res.ok) {
+                const t = await res.text();
+                showAlert('danger', `خطا در دریافت دسته‌بندی‌ها: ${res.status} - ${t}`);
+                return;
+            }
+            const categories = await res.json();
+
+            // به‌روزرسانی شمارنده
+            document.getElementById('categoryCount').textContent = categories.length;
+
+            const tbody = document.getElementById('categoriesTableBody');
+
+            if (categories.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state">
+                                <i class="fas fa-folder-open"></i>
+                                <p>هیچ دسته‌بندی‌ای یافت نشد</p>
+                                <small>برای ایجاد اولین دسته‌بندی، فرم بالا را پر کنید.</small>
+                            </div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            categories.forEach(c => {
+                const id = escapeHtml(c.id);
+                const name = escapeHtml(c.name);
+                const description = escapeHtml(c.description || 'بدون توضیحات');
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="status-badge" style="background-color: rgba(125, 39, 218, 0.2); color: var(--primary-light);">${id}</span></td>
+                        <td><strong>${name}</strong></td>
+                        <td>${description}</td>
+                        <td>
+                            <div class="action-buttons" style="display: flex; gap: 10px;">
+                                <button class="btn btn-warning btn-sm" onclick="editCategory('${id}', '${name.replace(/'/g, "\\'")}', '${description.replace(/'/g, "\\'")}')">
+                                    <i class="fas fa-edit"></i> ویرایش
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteCategory('${id}')">
+                                    <i class="fas fa-trash"></i> حذف
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+        } catch (err) {
+            showAlert('danger', `اشکال در ارتباط با سرور (دسته‌بندی‌ها): ${err.message}`);
+            console.error(err);
+        }
+    }
+
+    async function saveCategory(id, name, description) {
+        const payload = { name, description };
+        const url = id ? `${BASE}/categories/${id}` : `${BASE}/categories`;
+        const method = id ? 'PUT' : 'POST';
+
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: jsonHeaders(),
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                const text = await res.text();
+                showAlert('danger', `خطا در ذخیره دسته‌بندی: ${res.status} - ${text}`);
+                return;
+            }
+            showAlert('success', id ? 'دسته‌بندی با موفقیت ویرایش شد.' : 'دسته‌بندی با موفقیت اضافه شد.');
+            await loadCategories();
+        } catch (err) {
+            showAlert('danger', `اشکال در ذخیره دسته‌بندی: ${err.message}`);
+            console.error(err);
+        }
+    }
+
+    async function deleteCategory(id) {
+        if (!confirm('آیا از حذف این دسته‌بندی اطمینان دارید؟ پست‌های مرتبط با این دسته‌بندی ممکن است بدون دسته‌بندی شوند.')) return;
+
+        try {
+            const res = await fetch(`${BASE}/categories/${id}`, {
+                method: 'DELETE',
+                headers: CSRF_TOKEN ? { [CSRF_HEADER]: CSRF_TOKEN } : {}
+            });
+            if (!res.ok) {
+                const text = await res.text();
+                showAlert('danger', `خطا در حذف دسته‌بندی: ${res.status} - ${text}`);
+                return;
+            }
+            showAlert('success', 'دسته‌بندی با موفقیت حذف شد.');
+            await loadCategories();
+        } catch (err) {
+            showAlert('danger', `اشکال در حذف دسته‌بندی: ${err.message}`);
+            console.error(err);
+        }
+    }
+
+    function editCategory(id, name, description) {
+        document.getElementById('categoryId').value = id;
+        document.getElementById('categoryName').value = name;
+        document.getElementById('categoryDescription').value = description;
+
+        // اسکرول به فرم
+        document.getElementById('categoryForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    document.getElementById('categoryForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const id = document.getElementById('categoryId').value || null;
+        const name = document.getElementById('categoryName').value.trim();
+        const description = document.getElementById('categoryDescription').value.trim();
+
+        if (!name) {
+            showAlert('warning', 'نام دسته‌بندی را وارد کنید.');
+            return;
+        }
+
+        await saveCategory(id, name, description);
+        e.target.reset();
+        document.getElementById('categoryId').value = '';
+    });
+
+    document.getElementById('categoryResetBtn').addEventListener('click', () => {
+        document.getElementById('categoryForm').reset();
+        document.getElementById('categoryId').value = '';
+    });
+
+    // ===== برچسب‌ها =====
+    async function loadTags() {
+        try {
+            const res = await fetch(`${BASE}/tags`, { method: 'GET' });
+            if (!res.ok) {
+                const t = await res.text();
+                showAlert('danger', `خطا در دریافت برچسب‌ها: ${res.status} - ${t}`);
+                return;
+            }
+            const tags = await res.json();
+
+            // به‌روزرسانی شمارنده
+            document.getElementById('tagCount').textContent = tags.length;
+
+            const tbody = document.getElementById('tagsTableBody');
+
+            if (tags.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3">
+                            <div class="empty-state">
+                                <i class="fas fa-hashtag"></i>
+                                <p>هیچ برچسبی یافت نشد</p>
+                                <small>برای ایجاد اولین برچسب، فرم بالا را پر کنید.</small>
+                            </div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            tags.forEach(t => {
+                const id = escapeHtml(t.id);
+                const name = escapeHtml(t.name);
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="status-badge" style="background-color: rgba(16, 185, 129, 0.2); color: var(--success-color);">${id}</span></td>
+                        <td><strong>${name}</strong></td>
+                        <td>
+                            <div class="action-buttons" style="display: flex; gap: 10px;">
+                                <button class="btn btn-warning btn-sm" onclick="editTag('${id}', '${name.replace(/'/g, "\\'")}')">
+                                    <i class="fas fa-edit"></i> ویرایش
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteTag('${id}')">
+                                    <i class="fas fa-trash"></i> حذف
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+        } catch (err) {
+            showAlert('danger', `اشکال در ارتباط با سرور (برچسب‌ها): ${err.message}`);
+            console.error(err);
+        }
+    }
+
+    async function saveTag(id, name) {
+        const payload = { name };
+        const url = id ? `${BASE}/tags/${id}` : `${BASE}/tags`;
+        const method = id ? 'PUT' : 'POST';
+
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: jsonHeaders(),
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                const text = await res.text();
+                showAlert('danger', `خطا در ذخیره برچسب: ${res.status} - ${text}`);
+                return;
+            }
+            showAlert('success', id ? 'برچسب با موفقیت ویرایش شد.' : 'برچسب با موفقیت اضافه شد.');
+            await loadTags();
+        } catch (err) {
+            showAlert('danger', `اشکال در ذخیره برچسب: ${err.message}`);
+            console.error(err);
+        }
+    }
+
+    async function deleteTag(id) {
+        if (!confirm('آیا از حذف این برچسب اطمینان دارید؟ این برچسب از پست‌های مرتبط حذف خواهد شد.')) return;
+
+        try {
+            const res = await fetch(`${BASE}/tags/${id}`, {
+                method: 'DELETE',
+                headers: CSRF_TOKEN ? { [CSRF_HEADER]: CSRF_TOKEN } : {}
+            });
+            if (!res.ok) {
+                const text = await res.text();
+                showAlert('danger', `خطا در حذف برچسب: ${res.status} - ${text}`);
+                return;
+            }
+            showAlert('success', 'برچسب با موفقیت حذف شد.');
+            await loadTags();
+        } catch (err) {
+            showAlert('danger', `اشکال در حذف برچسب: ${err.message}`);
+            console.error(err);
+        }
+    }
+
+    function editTag(id, name) {
+        document.getElementById('tagId').value = id;
+        document.getElementById('tagName').value = name;
+
+        // اسکرول به فرم
+        document.getElementById('tagForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    document.getElementById('tagForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const id = document.getElementById('tagId').value || null;
+        const name = document.getElementById('tagName').value.trim();
+
+        if (!name) {
+            showAlert('warning', 'نام برچسب را وارد کنید.');
+            return;
+        }
+
+        await saveTag(id, name);
+        e.target.reset();
+        document.getElementById('tagId').value = '';
+    });
+
+    document.getElementById('tagResetBtn').addEventListener('click', () => {
+        document.getElementById('tagForm').reset();
+        document.getElementById('tagId').value = '';
+    });
+
+    // بارگذاری اولیه
+    loadCategories();
+    loadTags();
+
+    // مدیریت منوی موبایل
+    document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+        const navMenu = document.querySelector('.nav-menu');
+        const icon = this.querySelector('i');
+
+        navMenu.classList.toggle('active');
+        if (navMenu.classList.contains('active')) {
+            icon.classList.remove('fa-bars');
+            icon.classList.add('fa-times');
+        } else {
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        }
+    });
+
+    // بستن منوی موبایل با کلیک روی لینک
+    document.querySelectorAll('.nav-menu a').forEach(link => {
+        link.addEventListener('click', () => {
+            const navMenu = document.querySelector('.nav-menu');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const icon = menuBtn.querySelector('i');
+
+            navMenu.classList.remove('active');
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        });
+    });
+
+    // مدیریت اسکرول هدر
+    window.addEventListener('scroll', () => {
+        const header = document.querySelector('header');
+        if (window.scrollY > 50) {
+            header.style.backgroundColor = 'rgba(10, 10, 10, 0.98)';
+            header.style.backdropFilter = 'blur(10px)';
+        } else {
+            header.style.backgroundColor = 'rgba(10, 10, 10, 0.95)';
+            header.style.backdropFilter = 'none';
+        }
+    });
+</script>
+</body>
+</html>
