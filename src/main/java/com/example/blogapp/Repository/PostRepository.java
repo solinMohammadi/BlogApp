@@ -1,20 +1,15 @@
 package com.example.blogapp.Repository;
 
-
 import com.example.blogapp.Model.Post;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.example.blogapp.Model.Tag;
+import com.example.blogapp.Model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PostRepository extends JpaRepository<Post, Integer> {
-        Page<Post> findByAuthorId(Integer authorId , Pageable pageable);
+import java.util.List;
+import java.util.Optional;
 
-        Page<Post> findByTitleContainingIgnoreCase(String title , Pageable pageable);
-
-        Page<Post> findByContentContainingIgnoreCase(String content , Pageable pageable);
-
-        Page<Post> findByCategoryId(Integer categoryId, Pageable pageable);
-
-
-
+public interface PostRepository extends JpaRepository<Post,Integer> {
+        Optional<Post> findBySlug(String slug);
+        List<Post> findAllByAuthor(User author);
+        List<Post> findAllByTagsContaining(Tag tag);
 }

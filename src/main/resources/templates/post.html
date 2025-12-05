@@ -2,43 +2,58 @@
 <html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${post.title}">جزئیات پست</title>
+    <!-- Using Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Tailwind doesn't support RTL out of the box with classes, so we ensure the HTML dir is set */
+        /* Add custom styles for better transition on hover, if needed */
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
-<header class="bg-blue-600 text-white shadow sticky top-0 z-50">
+<body class="bg-gray-100 min-h-screen flex flex-col">
+<header class="bg-gradient-to-r from-purple-700 to-indigo-700 text-white shadow sticky top-0 z-50">
     <div class="container mx-auto px-6 py-4 flex justify-between items-center">
         <h1 class="text-2xl font-bold">وبلاگ</h1>
-        <nav class="space-x-4">
-            <a href="/" class="hover:underline">خانه</a>
-            <a href="/auth/login" class="hover:underline">ورود</a>
-            <a href="/auth/register" class="hover:underline">ثبت‌نام</a>
+        <nav class="space-x-4 space-x-reverse">
+            <a href="/" class="hover:text-purple-200">خانه</a>
+            <a href="/auth/login" class="hover:text-purple-200">ورود</a>
+            <a href="/auth/register" class="hover:text-purple-200">ثبت‌نام</a>
         </nav>
     </div>
 </header>
 <main class="container mx-auto px-6 py-10 flex-grow">
-    <article class="bg-white rounded-xl shadow-lg p-8 mb-12">
-        <h2 class="text-4xl font-bold mb-6 text-gray-900" th:text="${post.title}">عنوان پست</h2>
-        <div class="flex flex-wrap items-center gap-4 mb-8 text-sm text-gray-500">
-            <span th:text="${post.category != null ? post.category.name : 'بدون دسته'}">دسته‌بندی</span>
-            <span th:text="${#temporals.format(post.publishedAt,'yyyy-MM-dd HH:mm')}">تاریخ انتشار</span>
-            <span th:text="${post.author != null ? post.author.username : 'ناشناس'}">نویسنده</span>
+    <article class="bg-white rounded-xl shadow-xl p-8 mb-12 transition-shadow duration-300 hover:shadow-2xl">
+        <h2 class="text-4xl font-extrabold mb-6 text-gray-900" th:text="${post.title}">عنوان پست</h2>
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-3 mb-8 text-sm text-gray-500 border-b pb-4">
+            <span class="flex items-center gap-1">
+                <div class="text-lg">🏷️</div>
+                <span th:text="${post.category != null ? post.category.name : 'بدون دسته'}">دسته‌بندی</span>
+            </span>
+            <span class="flex items-center gap-1">
+                <div class="text-lg">🗓️</div>
+                <span th:text="${#temporals.format(post.publishedAt,'yyyy/MM/dd HH:mm')}">تاریخ انتشار</span>
+            </span>
+            <span class="flex items-center gap-1">
+                <div class="text-lg">👤</div>
+                <span th:text="${post.author != null ? post.author.username : 'ناشناس'}">نویسنده</span>
+            </span>
         </div>
-        <p class="text-xl text-gray-700 mb-8 leading-relaxed" th:text="${post.excerpt}">خلاصه پست</p>
+        <p class="text-xl text-gray-700 mb-8 leading-relaxed border-l-4 border-purple-500 pl-4 italic" th:text="${post.excerpt}">خلاصه پست</p>
         <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed" th:utext="${post.content}">محتوای پست</div>
     </article>
 
     <!-- Comments Section -->
     <section id="comments-section" class="bg-white rounded-xl shadow-lg p-8 mb-12">
         <h3 class="text-2xl font-bold mb-8 text-gray-900 border-b pb-4">
-            کامنت‌ها <span id="comments-count">0</span>
+            کامنت‌ها <span id="comments-count" class="text-purple-600 ml-2">0</span>
         </h3>
         <div id="no-comments" class="text-center py-12 text-gray-500">
             <div class="text-6xl mb-4">💬</div>
             <p class="text-xl">در حال بارگذاری کامنت‌ها...</p>
         </div>
-        <div id="approved-comments" class="mb-6"></div>
-        <div id="pending-comments"></div>
+        <div id="approved-comments" class="space-y-4"></div>
+        <div id="pending-comments" class="space-y-4"></div>
     </section>
 
     <section class="bg-white rounded-xl shadow-lg p-8" sec:authorize="isAuthenticated()">
@@ -47,24 +62,25 @@
             <input type="hidden" name="postId" th:value="${post.id}" id="postId"/>
             <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">نام شما:</label>
-                <input type="text" name="authorName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" required placeholder="نام خود را وارد کنید"/>
+                <label class="block text-sm font-medium text-gray-700 mb-2" for="authorName">نام شما:</label>
+                <input type="text" name="authorName" id="authorName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition" required placeholder="نام خود را وارد کنید"/>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">ایمیل:</label>
-                <input type="email" name="authorEmail" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" required placeholder="example@email.com"/>
+                <label class="block text-sm font-medium text-gray-700 mb-2" for="authorEmail">ایمیل:</label>
+                <input type="email" name="authorEmail" id="authorEmail" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition" required placeholder="example@email.com"/>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">متن کامنت:</label>
-                <textarea name="content" rows="5" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-vertical" required placeholder="نظر خود را بنویسید..."></textarea>
+                <label class="block text-sm font-medium text-gray-700 mb-2" for="content">متن کامنت:</label>
+                <textarea name="content" id="content" rows="5" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition resize-vertical" required placeholder="نظر خود را بنویسید..."></textarea>
             </div>
-            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg">ارسال کامنت</button>
+            <!-- دکمه ارسال با گرادینت بنفش/آبی -->
+            <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg shadow-purple-300/50">ارسال کامنت</button>
         </form>
     </section>
-    <section class="bg-white rounded-xl shadow-lg p-12 text-center" sec:authorize="isAnonymous()">
-        <div class="text-6xl mb-6">🔒</div>
+    <section class="bg-white rounded-xl shadow-lg p-12 text-center mt-8" sec:authorize="isAnonymous()">
+        <div class="text-6xl mb-6 text-purple-500">🔒</div>
         <h3 class="text-2xl font-bold text-gray-900 mb-4">برای کامنت گذاشتن وارد شوید</h3>
-        <a href="/auth/login" class="bg-blue-600 text-white px-8 py-4 rounded-xl font-semibold hover:bg-blue-700 transition">ورود به حساب</a>
+        <a href="/auth/login" class="bg-purple-600 text-white px-8 py-4 rounded-xl font-semibold hover:bg-purple-700 transition shadow">ورود به حساب</a>
     </section>
 </main>
 <footer class="bg-gray-900 text-gray-300 py-8 mt-auto">
@@ -75,7 +91,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Page loaded');
         const postId = document.getElementById('postId')?.value;
         if (postId) {
             loadComments(postId);
@@ -92,14 +107,10 @@
 
     async function loadComments(postId) {
         try {
-            console.log('Loading comments for post:', postId);
-            // استفاده از CommentController endpoint ✅
             const response = await fetch(`/comments/post/${postId}`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
             const comments = await response.json();
-            console.log('Comments loaded:', comments);
-
             renderComments(comments);
         } catch (error) {
             console.error('Load comments error:', error);
@@ -136,19 +147,24 @@
                 credentials: 'same-origin'
             });
 
-            const result = await response.json().catch(() => response.text());
+            let result;
+            try {
+                result = await response.json();
+            } catch (e) {
+                result = await response.text();
+            }
 
             if (response.ok) {
                 showMessage('✅ کامنت ارسال شد و منتظر تأیید است!', 'success');
                 form.reset();
-                // Reload comments.html فوراً (pending comment قرمز نمایش داده میشه)
                 await loadComments(postId);
             } else {
-                showMessage('❌ ' + (result || 'خطای ناشناخته'), 'error');
+                const errorMessage = typeof result === 'object' && result !== null ? result.message || 'خطای نامشخص در سرور' : result || 'خطای نامشخص';
+                showMessage(`❌ ${errorMessage}`, 'error');
             }
         } catch (error) {
             console.error('Submit error:', error);
-            showMessage('❌ خطای شبکه', 'error');
+            showMessage('❌ خطای شبکه یا دسترسی', 'error');
         } finally {
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
@@ -161,7 +177,6 @@
         const noComments = document.getElementById('no-comments');
         const countSpan = document.getElementById('comments-count');
 
-        // Clear sections
         approvedSection.innerHTML = '';
         pendingSection.innerHTML = '';
 
@@ -174,12 +189,12 @@
             <div class="text-6xl mb-4">💬</div>
             <p class="text-xl">هنوز کامنتی ثبت نشده است.</p>
         `;
+            noComments.style.display = 'block';
             return;
         }
 
         noComments.style.display = 'none';
 
-        // Sort: approved first, then pending (newest first)
         const sortedComments = comments.sort((a, b) => {
             if (a.approved !== b.approved) return b.approved - a.approved;
             return new Date(b.createdAt) - new Date(a.createdAt);
@@ -187,30 +202,33 @@
 
         sortedComments.forEach(comment => {
             const div = document.createElement('div');
-            div.className = comment.approved === 0
-                ? 'border py-6 rounded-xl mb-4 transition-all duration-200 hover:bg-gray-50 border-red-300 bg-red-50 shadow-md ring-2 ring-red-200/50'
-                : 'border py-6 rounded-xl mb-4 transition-all duration-200 hover:bg-gray-50 border-gray-200';
+
+            const formattedDate = comment.createdAt ? new Date(comment.createdAt).toLocaleString('fa-IR', { dateStyle: 'short', timeStyle: 'short' }) : 'تاریخ نامشخص';
 
             if (comment.approved === 0) {
+                // Pending Comment Style (Red/Warning)
+                div.className = 'border p-4 rounded-xl mb-4 transition-all duration-200 bg-red-50 shadow-md ring-1 ring-red-300';
                 div.innerHTML = `
-                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 mb-3">
-                    ⏳ منتظر تأیید مدیر
+                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-200 text-red-900 mb-3">
+                    <span class="ml-1 text-base">⏳</span> منتظر تأیید مدیر
                 </div>
                 <div class="text-lg mb-3 leading-relaxed text-red-800">${escapeHtml(comment.content)}</div>
-                <div class="flex flex-wrap items-center justify-between text-sm text-gray-500 gap-2">
-                    <span>${escapeHtml(comment.authorName)}</span>
+                <div class="flex flex-wrap items-center justify-between text-sm text-gray-600 gap-2 border-t pt-2 mt-2">
+                    <span class="font-semibold text-gray-700">${escapeHtml(comment.authorName)}</span>
                     ${comment.authorEmail ? `<span>✉️ ${escapeHtml(comment.authorEmail)}</span>` : ''}
-                    <span>${comment.createdAt}</span>
+                    <span>${formattedDate}</span>
                 </div>
             `;
                 pendingSection.appendChild(div);
             } else {
+                // Approved Comment Style (Normal)
+                div.className = 'border p-4 rounded-xl mb-4 transition-all duration-200 hover:bg-purple-50 bg-white shadow-sm';
                 div.innerHTML = `
                 <div class="text-lg mb-3 leading-relaxed text-gray-900">${escapeHtml(comment.content)}</div>
-                <div class="flex flex-wrap items-center justify-between text-sm text-gray-500 gap-2">
-                    <span>${escapeHtml(comment.authorName)}</span>
+                <div class="flex flex-wrap items-center justify-between text-sm text-gray-500 gap-2 border-t pt-2 mt-2">
+                    <span class="font-semibold text-gray-700">${escapeHtml(comment.authorName)}</span>
                     ${comment.authorEmail ? `<span>✉️ ${escapeHtml(comment.authorEmail)}</span>` : ''}
-                    <span>${comment.createdAt}</span>
+                    <span>${formattedDate}</span>
                 </div>
             `;
                 approvedSection.appendChild(div);
@@ -219,6 +237,7 @@
     }
 
     function escapeHtml(text) {
+        if (typeof text !== 'string') return text;
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
@@ -226,7 +245,7 @@
 
     function showMessage(text, type) {
         const div = document.createElement('div');
-        div.className = `fixed top-20 right-4 z-50 px-6 py-4 rounded-xl shadow-2xl text-white text-lg font-medium transform translate-x-full transition-all duration-300 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+        div.className = `fixed top-20 right-4 z-50 px-6 py-4 rounded-xl shadow-2xl text-white text-lg font-medium transform translate-x-full transition-all duration-300 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
         div.innerHTML = `<strong>${text}</strong>`;
         document.body.appendChild(div);
         setTimeout(() => div.classList.remove('translate-x-full'), 100);

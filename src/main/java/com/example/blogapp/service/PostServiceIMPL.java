@@ -2,68 +2,62 @@ package com.example.blogapp.service;
 
 
 import com.example.blogapp.Model.Post;
+import com.example.blogapp.Model.Tag;
+import com.example.blogapp.Model.User;
 import com.example.blogapp.Repository.PostRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+
+
 @Service
-    public class PostServiceIMPL implements PostService {
+public class PostServiceIMPL implements PostService {
+    private final PostRepository postRepository;
 
-        private final PostRepository postRepository;
-        public PostServiceIMPL(PostRepository postRepository) {
-            this.postRepository = postRepository;
-        }
-
-        @Override
-        public Post save(Post post) {
-            return postRepository.save(post);
-        }
-
-        @Override
-        public Optional<Post> findById(Integer id) {
-            return postRepository.findById(id);
-        }
-
-
+    public PostServiceIMPL(PostRepository postRepository) {
+        this.postRepository = postRepository;
+    }
 
     @Override
     public Page<Post> findAll(Pageable pageable) {
         return postRepository.findAll(pageable);
     }
 
+    @Override
+    public List<Post> findAll(User user) {
+        return postRepository.findAllByAuthor(user);
+    }
 
     @Override
-        public void deleteById(Integer id) {
-            postRepository.deleteById(id);
-        }
-
-        @Override
-        public Post update(Integer id, Post post) {
-            return postRepository.findById(id)
-                    .map(existingPost -> {
-                        existingPost.setTitle(post.getTitle());
-                        existingPost.setContent(post.getContent());
-                        existingPost.setCategory(post.getCategory());
-                        existingPost.setAuthor(post.getAuthor());
-                        return postRepository.save(existingPost);
-                    })
-                    .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
-        }
-
+    public Optional<Post> findById(int id) {
+        return postRepository.findById(id);
+    }
 
     @Override
-        public Page<Post> findByTitleAndContentContaining(String keyword, Pageable pageable) {
-            Page<Post> byTitle = postRepository.findByTitleContainingIgnoreCase(keyword, pageable);
-            if (byTitle.hasContent()) {
-                return byTitle;
-            }
-            return postRepository.findByContentContainingIgnoreCase(keyword, pageable);
-        }
+    public Optional<Post> findBySlug(String slug) {
+        return postRepository.findBySlug(slug);
+    }
 
-        @Override
-        public Page<Post> findByCategoryId(Integer categoryId, Pageable pageable) {
-            return postRepository.findByCategoryId(categoryId, pageable);
-        }
+    @Override
+    public Post save(Post post) {
+        return postRepository.save(post);
+    }
 
+    @Override
+    public void deleteById(int id) {
+        postRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Post> findByTag(Tag tag){
+        return postRepository.findAllByTagsContaining(tag);
+    }
+
+    @Override
+    public long count() {
+        return postRepository.count();
+    }
 }

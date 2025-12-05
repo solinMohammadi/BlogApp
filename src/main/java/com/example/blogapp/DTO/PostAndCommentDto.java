@@ -1,13 +1,14 @@
 package com.example.blogapp.DTO;
 
-        import java.time.LocalDateTime;
-        import java.util.List;
+import java.time.LocalDateTime;
+import java.util.List;
 
 public class PostAndCommentDto {
     private Integer postId;
     private String title;
     private String excerpt;
     private String content;
+    private String imageUrl;
     private String slug;
     private LocalDateTime publishedAt;
     private int views;
@@ -20,6 +21,14 @@ public class PostAndCommentDto {
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 
     public String getExcerpt() { return excerpt; }
     public void setExcerpt(String excerpt) { this.excerpt = excerpt; }

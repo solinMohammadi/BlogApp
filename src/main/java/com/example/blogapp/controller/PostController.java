@@ -1,98 +1,199 @@
 package com.example.blogapp.controller;
 
+import com.example.blogapp.DTO.CommentDto;
+import com.example.blogapp.DTO.PostAndCommentDto;
+import com.example.blogapp.DTO.PostDto;
+import com.example.blogapp.Model.Category;
 import com.example.blogapp.Model.Post;
+import com.example.blogapp.Model.Tag;
+import com.example.blogapp.Model.User;
+import com.example.blogapp.service.CategoryService;
 import com.example.blogapp.service.PostService;
+import com.example.blogapp.service.TagService;
+import com.example.blogapp.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/posts")
+@RequestMapping("/posts")
 public class PostController {
 
     private final PostService postService;
+    private final UserService userService;
+    private final CategoryService categoryService;
+    private final TagService tagService;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService,
+                          UserService userService,
+                          CategoryService categoryService,
+                          TagService tagService) {
         this.postService = postService;
+        this.userService = userService;
+        this.categoryService = categoryService;
+        this.tagService = tagService;
     }
 
-    @PostMapping
-    public ResponseEntity<Post> createPost(@Valid @RequestBody Post post) {
-        Post savedPost = postService.save(post);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedPost);
+    private PostDto toDto(Post post) {
+        Integer categoryId = post.getCategory() != null ? post.getCategory().getId() : null;
+        String categoryName = post.getCategory() != null ? post.getCategory().getName() : null;
+        List<Integer> tagIds = post.getTags() != null
+                ? post.getTags().stream().map(Tag::getId).toList()
+                : List.of();
+        List<String> tagNames = post.getTags() != null
+                ? post.getTags().stream().map(Tag::getName).toList()
+                : List.of();
+
+        return new PostDto(
+                post.getId(),
+                post.getSlug(),
+                post.getTitle(),
+                post.getContent(),
+                post.getExcerpt(),
+                post.getImageUrl(),
+                post.getStatus(),
+                post.getPublishedAt(),
+                post.getViews(),
+                categoryId,
+                categoryName,
+                tagIds,
+                tagNames
+        );
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Post> getPost(@PathVariable Integer id) {
-        Optional<Post> post = postService.findById(id);
-        return post.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    private void applyDtoToEntity(PostDto dto, Post post, Authentication auth) {
+        post.setTitle(dto.title());
+        post.setContent(dto.content());
+        post.setExcerpt(dto.excerpt());
+        post.setImageUrl(dto.imageUrl());
+        post.setStatus(dto.status());
+        post.setPublishedAt(dto.publishedAt());
+
+        User user = userService.findByUsername(auth.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        post.setAuthor(user);
+
+        if (dto.categoryId() != null) {
+            Category category = categoryService.findById(dto.categoryId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+            post.setCategory(category);
+        } else {
+            post.setCategory(null);
+        }
+
+        if (dto.tagIds() != null && !dto.tagIds().isEmpty()) {
+            List<Tag> tags = new ArrayList<>();
+            for (Integer id : dto.tagIds()) {
+                Tag tag = tagService.findById(id)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag not found: " + id));
+                tags.add(tag);
+            }
+            post.setTags(tags);
+        } else {
+            post.setTags(new ArrayList<>());
+        }
     }
 
     @GetMapping
-    public ResponseEntity<Page<Post>> getAllPosts(
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
-
-        Sort sort = direction.equalsIgnoreCase("desc") ?
-                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
-
+    public ResponseEntity<Page<PostDto>> getAll(Pageable pageable) {
         Page<Post> posts = postService.findAll(pageable);
-        return ResponseEntity.ok(posts);
+        return ResponseEntity.ok(posts.map(this::toDto));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PostDto> getById(@PathVariable Integer id) {
+        return postService.findById(id)
+                .map(p -> ResponseEntity.ok(toDto(p)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<PostDto> getBySlug(@PathVariable String slug) {
+        return postService.findBySlug(slug)
+                .map(p -> ResponseEntity.ok(toDto(p)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PostDto> save(@Valid @RequestBody PostDto dto, Authentication auth) {
+        Post post = new Post();
+        post.setViews(0);
+        applyDtoToEntity(dto, post, auth);
+        Post saved = postService.save(post);
+
+        if (saved.getSlug() == null || saved.getSlug().isBlank()) {
+            saved.setSlug(saved.getTitle() + "-" + saved.getId());
+            saved = postService.save(saved);
+        }
+
+        return ResponseEntity.ok(toDto(saved));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Post> updatePost(
-            @PathVariable Integer id,
-            @Valid @RequestBody Post post) {
-        try {
-            Post updatedPost = postService.update(id, post);
-            return ResponseEntity.ok(updatedPost);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PostDto> update(@PathVariable Integer id,
+                                          @Valid @RequestBody PostDto dto,
+                                          Authentication auth) {
+        Optional<Post> opt = postService.findById(id);
+        if (opt.isEmpty()) return ResponseEntity.notFound().build();
+
+        Post post = opt.get();
+        applyDtoToEntity(dto, post, auth);
+        Post saved = postService.save(post);
+        return ResponseEntity.ok(toDto(saved));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Integer id) {
-        if (postService.findById(id).isPresent()) {
-            postService.deleteById(id);
-            return ResponseEntity.noContent().build();
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        if (postService.findById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
+        postService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+    // در PostController، متد getPostWithComments را به‌روزرسانی کنید
+    @GetMapping("/{id}/with-comments")
+    public ResponseEntity<PostAndCommentDto> getPostWithComments(@PathVariable Integer id) {
+        return postService.findById(id)
+                .map(post -> {
+                    List<CommentDto> commentDtos = post.getComments().stream()
+                            .map(c -> new CommentDto(
+                                    c.getId(),
+                                    c.getContent(),
+                                    c.getAuthorName(),
+                                    c.getAuthorEmail(),
+                                    c.getApproved(),
+                                    c.getPost() != null ? c.getPost().getId() : null,
+                                    c.getCreatedAt()
+                            ))
+                            .toList();
+                    PostAndCommentDto dto = new PostAndCommentDto();
+                    dto.setPostId(post.getId());
+                    dto.setTitle(post.getTitle());
+                    dto.setExcerpt(post.getExcerpt());
+                    dto.setContent(post.getContent());
+                    dto.setImageUrl(post.getImageUrl());
+                    dto.setSlug(post.getSlug());
+                    dto.setPublishedAt(post.getPublishedAt());
+                    dto.setViews(post.getViews());
+                    dto.setCategoryName(post.getCategory() != null ? post.getCategory().getName() : null);
+                    dto.setAuthorUsername(post.getAuthor() != null ? post.getAuthor().getUsername() : null);
+                    dto.setComments(commentDtos);
+                    return ResponseEntity.ok(dto);
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Page<Post>> searchPosts(
-            @RequestParam String keyword,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
-
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Post> posts = postService.findByTitleAndContentContaining(keyword, pageable);
-        return ResponseEntity.ok(posts);
-    }
-
-    @GetMapping("/category/{categoryId}")
-    public ResponseEntity<Page<Post>> getPostsByCategory(
-            @PathVariable Integer categoryId,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
-
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Post> posts = postService.findByCategoryId(categoryId, pageable);
-        return ResponseEntity.ok(posts);
-    }
 }

@@ -1,112 +1,172 @@
 package com.example.blogapp.Model;
 
-
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import jdk.jfr.Category;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.xml.stream.events.Comment;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-    @Table(name = "posts")
-    public class Post {
-        private int id;
-        private String title;
-        private String content;
-        private  Post post;
-        private Category category;
-        private List<Comment> comments;
-        private List<Tag> tags;
-        private User author;
-        private LocalDateTime createdAt;
-
-      @ManyToOne
-      public Post getPost() {
-          return post;
-      }
-
-      public void setPost(Post post) {
-          this.post = post;
-      }
-
+public class Post {
+    private int id;
+    private String title;
+    private String slug;
+    private String imageUrl;
+    private String content;
+    private String excerpt;
+    private Status status;
+    private LocalDateTime publishedAt;
+    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
+    private int views;
+    private List<Tag> tags;
+    private Category category;
+    private User author;
+    private List<Comment>  comments;
 
     @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        public int getId() {
-            return id;
-        }
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public int getId() {
+        return id;
+    }
 
-        public void setId(int id) {
-            this.id = id;
-        }
+    public void setId(int id) {
+        this.id = id;
+    }
 
-        @Size(min = 3, max = 100, message = "title.size")
-        @NotBlank(message = "title.null")
-        public String getTitle() {
-            return title;
-        }
+    public String getTitle() {
+        return title;
+    }
 
-        public void setTitle(String title) {
-            this.title = title;
-        }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-        @Size(min = 10, max = 5000, message = "content.size")
-        @NotBlank(message = "content.null")
-        public String getContent() {
-            return content;
-        }
+    public String getImageUrl() {
+        return imageUrl;
+    }
 
-        public void setContent(String content) {
-            this.content = content;
-        }
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 
-        @ManyToOne
-        public Category getCategory() {
-            return category;
-        }
+    public String getSlug() {
+        return slug;
+    }
 
-        public void setCategory(Category category) {
-            this.category = category;
-        }
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
 
-        @OneToMany
-        public List<Comment> getComments() {
-            return comments;
-        }
+    public String getContent() {
+        return content;
+    }
 
-        public void setComments(List<Comment> comments) {
-            this.comments = comments;
-        }
+    public void setContent(String content) {
+        this.content = content;
+    }
 
-        @OneToMany
-        public List<Tag> getTags() {
-            return tags;
-        }
+    public String getExcerpt() {
+        return excerpt;
+    }
 
-        public void setTags(List<Tag> tags) {
-            this.tags = tags;
-        }
+    public void setExcerpt(String excerpt) {
+        this.excerpt = excerpt;
+    }
 
-        @ManyToOne
-        public User getAuthor() {
-            return author;
-        }
+    @Enumerated(EnumType.STRING)
+    public Status getStatus() {
+        return status;
+    }
 
-        public void setAuthor(User author) {
-            this.author = author;
-        }
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
-        @CreationTimestamp
-        public LocalDateTime getCreatedAt() {
-            return createdAt;
-        }
+    public LocalDateTime getPublishedAt() {
+        return publishedAt;
+    }
 
-        public void setCreatedAt(LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-        }
+    public void setPublishedAt(LocalDateTime publishedAt) {
+        this.publishedAt = publishedAt;
+    }
 
+    @UpdateTimestamp
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    @CreationTimestamp
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public int getViews() {
+        return views;
+    }
+
+    public void setViews(int views) {
+        this.views = views;
+    }
+
+
+    @ManyToOne
+    public User getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(User author) {
+        this.author = author;
+    }
+
+    @ManyToMany
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
+    }
+
+
+    @OneToOne
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    @OneToMany
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
+
+    @PrePersist
+    public void generateSlug() {
+        if (this.slug == null || this.slug.isBlank()) {
+            this.slug = slugify(this.title + "-" + System.currentTimeMillis());
+        }
+    }
+
+    private String slugify(String input) {
+        if (input == null) return null;
+        return input.toLowerCase()
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-|-$", "");
+    }
 }
